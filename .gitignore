@@ -4,3 +4,11 @@
 # Environment / secrets
 .env
 .env.local
+# Local-only working notes and context, never committed
+/_local/
+CLAUDE.local.md
+PROJECT_CONTEXT.md
+.env
+*.env
+node_modules/
+.DS_Store
