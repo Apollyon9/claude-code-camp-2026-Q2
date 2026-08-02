@@ -12,3 +12,6 @@ PROJECT_CONTEXT.md
 *.env
 node_modules/
 .DS_Store
+
+# Built gem packages (keep .gemspec tracked)
+*.gem
