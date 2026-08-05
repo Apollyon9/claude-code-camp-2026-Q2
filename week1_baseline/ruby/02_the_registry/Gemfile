@@ -1,0 +1,4 @@
+source "https://rubygems.org"
+
+# Only external dependency in this step. Everything else is stdlib.
+gem "dotenv", "~> 3.1"
