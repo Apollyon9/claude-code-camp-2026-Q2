@@ -1,0 +1,10 @@
+source "https://rubygems.org"
+
+# Runtime dependencies now come from the gemspec, the single source of
+# truth once this is an installable gem.
+gemspec
+
+group :test do
+  gem "minitest", "~> 5.25"
+  gem "rake", "~> 13.2"
+end
