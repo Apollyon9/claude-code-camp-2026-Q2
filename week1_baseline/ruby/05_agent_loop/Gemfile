@@ -1,0 +1,9 @@
+source "https://rubygems.org"
+
+# Only external runtime dependency in this step. Everything else is stdlib.
+gem "dotenv", "~> 3.1"
+
+group :test do
+  gem "minitest", "~> 5.25"
+  gem "rake", "~> 13.2"
+end
