@@ -1,4 +1,0 @@
-{"phase":"session_start","provider":"anthropic","model":"claude-haiku-4-5","session_id":"20260806T160940Z-9c8e669f","at":"2026-08-06T19:09:40+03:00"}
-{"phase":"iteration","n":1,"max":25,"session_id":"20260806T160940Z-9c8e669f","at":"2026-08-06T19:09:40+03:00"}
-{"phase":"response","text":"Hi there friend!","stop_reason":"end_turn","session_id":"20260806T160940Z-9c8e669f","at":"2026-08-06T19:09:41+03:00"}
-{"phase":"turn_end","reason":"completed","iterations":1,"session_id":"20260806T160940Z-9c8e669f","at":"2026-08-06T19:09:41+03:00"}
