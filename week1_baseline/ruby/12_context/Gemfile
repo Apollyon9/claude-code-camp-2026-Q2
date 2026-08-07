@@ -1,0 +1,15 @@
+source "https://rubygems.org"
+
+# Runtime dependencies now come from the gemspec, the single source of
+# truth once this is an installable gem.
+gemspec
+
+# mud_manager isn't published, it's the provided SDK vendored under
+# week0_explore. Local path override so Bundler can resolve the gemspec
+# dependency above without needing a real gem source.
+gem "mud_manager", path: "../../../week0_explore/mud_manager"
+
+group :test do
+  gem "minitest", "~> 5.25"
+  gem "rake", "~> 13.2"
+end
