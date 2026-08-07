@@ -172,8 +172,19 @@ module MudManager
       # Enter Username
       self.send_command(username)
 
-      # Expect Password Prompt
-      self.read_until(/Password/i)
+      # A name the server has never seen gets a confirmation prompt before
+      # it's ever asked for a password ("Did I get that right, Name (Y/N)?").
+      # An existing character skips straight to Password. Recognising this
+      # here turns "no such character" into a clear error instead of a 10s
+      # timeout waiting for a Password prompt that was never coming --
+      # verified against the real server, this isn't a guess. login() does
+      # not create characters; declining ("n") returns the server to its
+      # own name prompt cleanly rather than leaving a half-confirmed "y".
+      output = self.read_until(/Did I get that right.*\(Y\/N\)|Password/i)
+      if output =~ /Did I get that right/i
+        self.send_command("n")
+        raise LoginError, "no character named '#{username}' -- login does not create new characters"
+      end
 
       # Enter Password
       self.send_command(password)
