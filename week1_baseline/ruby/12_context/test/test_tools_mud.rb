@@ -35,7 +35,7 @@ class TestToolsMud < Minitest::Test
   end
 
   def test_registers_the_expected_tool_set
-    expected = %w[look move check_self consider attack flee posture get_item drop_item give_item equip talk rest_recover]
+    expected = %w[look move check_self consider attack flee posture get_item drop_item give_item equip talk rest_recover shop]
     assert_equal expected.sort, @registry.tools.keys.sort
   end
 
@@ -106,5 +106,15 @@ class TestToolsMud < Minitest::Test
     result = @registry.dispatch("flee")
     assert_equal "flee", @session.sent_commands.first.raw
     refute_nil result
+  end
+
+  def test_shop_list_reads_a_shopkeepers_wares
+    @registry.dispatch("shop", op: "list")
+    assert_equal "list", @session.sent_commands.first.raw
+  end
+
+  def test_shop_buy_with_an_item
+    @registry.dispatch("shop", op: "buy", args: "bread")
+    assert_equal "buy bread", @session.sent_commands.first.raw
   end
 end

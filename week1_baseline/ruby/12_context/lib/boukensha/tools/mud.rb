@@ -103,6 +103,14 @@ module Boukensha
         registry.tool("rest_recover", description: "Save your character to disk.") do
           send_and_read(connector, MudManager::Primitives.save_char)
         end
+
+        registry.tool("shop", description: "Interact with a shopkeeper: list what they sell, check a price, buy, sell, or appraise an item.",
+                      parameters: {
+                        op: {type: "string", enum: MudManager::Primitives::SHOP_OPS},
+                        args: {type: "string", description: "optional: item name, needed for buy/sell/value"}
+                      }) do |op:, args: nil|
+          send_and_read(connector, MudManager::Primitives.shop(op, args: args))
+        end
       end
 
       # Ensures the session is open and logged in exactly once, on the first
