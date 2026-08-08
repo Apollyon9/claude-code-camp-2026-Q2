@@ -250,6 +250,22 @@ class TestAgent < Minitest::Test
     assert_equal 1050, @context.turn_tokens
   end
 
+  def test_logs_estimated_cost_on_response
+    # claude-haiku-4-5: $1.00/M input, $5.00/M output.
+    # 1000 input tokens = $0.001, 50 output tokens = $0.00025 -> $0.00125
+    responses = [
+      {"stop_reason" => "end_turn", "content" => [{"type" => "text", "text" => "hi"}],
+       "usage" => {"input_tokens" => 1000, "output_tokens" => 50}}
+    ]
+    spy = SpyLogger.new
+    client = FakeClient.new(responses)
+    agent = Boukensha::Agent.new(context: @context, registry: @registry, builder: @builder, client: client, logger: spy)
+    agent.run
+
+    response_call = spy.calls.find { |m, _| m == :response }.last
+    assert_in_delta 0.00125, response_call[:cost], 0.000001
+  end
+
   def test_turn_tokens_reset_at_the_start_of_each_run
     response = ->(input, output) {
       {"stop_reason" => "end_turn", "content" => [{"type" => "text", "text" => "hi"}],

@@ -37,8 +37,8 @@ module Boukensha
       write_log(phase: "tool_result", name: name, result: result.to_s, ok: ok, error: error)
     end
 
-    def response(text:, stop_reason: nil)
-      write_log(phase: "response", text: text.to_s.strip, stop_reason: stop_reason)
+    def response(text:, stop_reason: nil, cost: nil)
+      write_log(phase: "response", text: text.to_s.strip, stop_reason: stop_reason, cost: cost)
     end
 
     def limit_reached(kind:, n:, max:)

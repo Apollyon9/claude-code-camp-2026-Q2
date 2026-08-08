@@ -46,16 +46,16 @@ module Boukensha
         @logger.iteration(n: @iteration, max: @max_iterations)
 
         response = @client.call(max_output_tokens: @max_output_tokens)
-        record_usage(response)
+        cost = record_usage(response)
         parsed = @builder.parse_response(response)
 
         if parsed[:stop_reason] == "tool_use"
           calls = parsed[:content].count { |b| b["type"] == "tool_use" }
-          @logger.response(text: "(tool use -- #{calls} call#{'s' unless calls == 1})", stop_reason: "tool_use")
+          @logger.response(text: "(tool use -- #{calls} call#{'s' unless calls == 1})", stop_reason: "tool_use", cost: cost)
           handle_tool_calls(parsed[:content])
         else
           text = extract_text(parsed[:content])
-          @logger.response(text: text, stop_reason: parsed[:stop_reason])
+          @logger.response(text: text, stop_reason: parsed[:stop_reason], cost: cost)
           @logger.turn_end(reason: "completed", iterations: @iteration, tokens: @context.turn_tokens)
           @context.messages << Message.new(:assistant, text)
           return text
@@ -79,10 +79,16 @@ module Boukensha
     # Anthropic's raw response always carries a top-level "usage" object
     # regardless of stop_reason, single-backend for now so this stays a
     # direct read rather than a new field threaded through every backend.
+    # Returns this call's estimated USD cost so the caller can log it --
+    # Backends::Base#estimate_cost already existed with real pricing tables,
+    # it just had no caller until now.
     def record_usage(response)
       usage = response["usage"] || {}
-      @context.add_turn_tokens(usage["input_tokens"], usage["output_tokens"])
-      @context.update_tokens(usage["input_tokens"].to_i)
+      input_tokens  = usage["input_tokens"].to_i
+      output_tokens = usage["output_tokens"].to_i
+      @context.add_turn_tokens(input_tokens, output_tokens)
+      @context.update_tokens(input_tokens)
+      @builder.backend.estimate_cost(input_tokens: input_tokens, output_tokens: output_tokens)
     end
 
     def compact_if_needed
@@ -126,16 +132,17 @@ module Boukensha
     # not keep acting.
     def wrap_up(reason)
       @context.messages << Message.new(:user, WRAP_UP_DIRECTIVE)
+      cost = nil
       text = begin
         response = @client.call(max_output_tokens: WRAP_UP_OUTPUT_TOKENS, tools: [])
-        record_usage(response)
+        cost = record_usage(response)
         parsed = @builder.parse_response(response)
         extracted = extract_text(parsed[:content])
         extracted.strip.empty? ? fallback_message(reason) : extracted
       rescue ApiError
         fallback_message(reason)
       end
-      @logger.response(text: text, stop_reason: "wrap_up")
+      @logger.response(text: text, stop_reason: "wrap_up", cost: cost)
       @logger.turn_end(reason: reason, iterations: @iteration, tokens: @context.turn_tokens)
       @context.messages << Message.new(:assistant, text)
       text

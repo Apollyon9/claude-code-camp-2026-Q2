@@ -92,12 +92,21 @@ class TestLogger < Minitest::Test
 
   def test_response_event
     with_logger do |logger, _dir|
-      logger.response(text: "  Hello!  ", stop_reason: "end_turn")
+      logger.response(text: "  Hello!  ", stop_reason: "end_turn", cost: 0.000123)
       event = read_events(logger.path).last
       assert_equal "response", event["phase"]
       # text is stripped -- the log shouldn't preserve incidental whitespace.
       assert_equal "Hello!", event["text"]
       assert_equal "end_turn", event["stop_reason"]
+      assert_in_delta 0.000123, event["cost"], 0.0000001
+    end
+  end
+
+  def test_response_event_cost_defaults_to_nil
+    with_logger do |logger, _dir|
+      logger.response(text: "hi")
+      event = read_events(logger.path).last
+      assert_nil event["cost"]
     end
   end
 
