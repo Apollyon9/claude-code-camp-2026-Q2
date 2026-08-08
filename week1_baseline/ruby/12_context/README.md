@@ -80,6 +80,28 @@ undersized the window guess and topped out at 82%, still under threshold,
 proof the mechanism was tested against real behaviour rather than assumed
 to fire from the code alone.
 
+## The instructor's own benchmark, run late, and a real gap it found
+
+Every example script through this whole build used a scenario built to
+isolate that step's own mechanism, never the instructor's own Week 1
+benchmark: find the bakery and list what it sells. Running it for the first
+time turned up a real gap immediately, `Tools::Mud` had 13 tools and none of
+them could read a shop's menu. `MudManager::Primitives.shop` (list/buy/sell/
+value/offer) existed the whole time, it just never got wrapped. Added as a
+14th tool, `shop`, before running anything, `test_shop_list_reads_a_
+shopkeepers_wares` and `test_shop_buy_with_an_item` alongside it.
+
+With that in place: `examples/benchmark_find_bakery.rb` found the bakery and
+read the real menu unassisted, 18 tool calls, 63,437 tokens, 63.4 seconds.
+The token number sits almost exactly inside the instructor's own
+unoptimized range (59,000-65,000, his own office-hours numbers), so this
+isn't an artificially cheap comparison. The time is the more interesting
+number: 63 seconds against his unoptimized 5-7 minutes, close to his own
+*post*-optimization 31 seconds, without doing any of the optimization work
+he did to get there. The TUI he found eating most of that time was never
+built here in the first place (see the TUI-skip decision above), so this
+build starts from roughly where his ended up.
+
 ## Code Changes
 
 | File | Purpose |
@@ -90,8 +112,11 @@ to fire from the code alone.
 | `lib/boukensha/logger.rb` | adds `compaction` event, `turn_end` carries `tokens:` |
 | `lib/boukensha/repl.rb` | `/compact` command, `/clear` uses `clear_messages!` |
 | `lib/boukensha.rb` | `context_window:`/`max_turn_tokens:` on `.run`/`.repl` |
+| `lib/boukensha/tools/mud.rb` | adds the 14th tool, `shop` |
 | `test/test_context.rb`, `test_models.rb` | token math, compaction thresholds and dropping |
 | `test/test_agent.rb`, `test_repl.rb`, `test_logger.rb` | circuit breaker, `/compact`, `compaction` event |
+| `test/test_tools_mud.rb` | `shop` list/buy |
+| `examples/benchmark_find_bakery.rb` | the instructor's own benchmark, run for real |
 
 ## Run it
 
